@@ -1,0 +1,31 @@
+Cancel Autonomous
+Arm down group
+Arm up group
+Intake down
+Intake up
+Intake toggle
+Arm zero reset
+Arm manual down
+Arm manual up
+Arm set low
+Arm set rocket
+Arm set cargo
+Moth open
+Moth close
+Moth toggle
+Intake both
+Outtake Both
+Vision hold
+Vision auto
+Climber open
+Climber close
+Climber open override
+Climber close override
+
+-Turn to 0
+-Turn to 90
+-Turn to -90
+-Turn to RR back
+-Turn to RR front
+-Turn to LR back
+-Turn to LR front

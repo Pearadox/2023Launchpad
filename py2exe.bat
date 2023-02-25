@@ -1,0 +1,1 @@
+pyinstaller PearLancher.py -F
