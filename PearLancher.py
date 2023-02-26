@@ -9,30 +9,33 @@ tableName = "Launchpad"
 
 # LED Arrays:
 leds = [
-    [[60,0,60],[60,0,60],[63,10,0],[0,0,0],[63,0,0],[0,0,0],[63,10,0],[63,10,0],[0,0,0]],
-    [[60,0,60],[60,0,60],[0,0,0],[0,0,0],[0,63,0],[0,63,0],[20,20,20],[20,20,20],[20,20,20]],
-    [[0,0,0],[0,0,0],[0,0,0],[0,0,0],[50,30,0],[50,30,0],[0,30,30],[0,30,30],[0,30,30]],
-    [[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[63,10,0],[30,10,0],[30,10,0],[63,10,0]],
-    [[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[63,10,0]],
-    [[0,0,0],[0,0,0],[0,10,60],[0,0,0],[0,0,0],[0,10,60],[0,0,0],[0,0,0],[63,10,0]],
-    [[0,0,0],[0,0,0],[0,10,60],[0,0,0],[0,10,60],[0,10,60],[0,0,0],[0,0,0],[0,0,0]],
     [[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0]],
-    [[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0]]
+    [[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[63,0,0]],
+    [[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0]],
+    [[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0]],
+    [[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0]],
+    [[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0]],
+    [[0,63,0],[0,63,0],[0,63,0],[0,63,0],[0,63,0],[0,63,0],[0,63,0],[0,63,0],[0,63,0]],
+    [[256,256,0],[30,0,211],[256,256,0],[256,256,0],[30,0,211],[256,256,0],[256,256,0],[30,0,211],[256,256,0]],
+    [[256,256,0],[30,0,63],[256,256,0],[256,256,0],[30,0,211],[256,256,0],[256,256,0],[30,0,211],[256,256,0]]
 ]
 
 # Current button status:
 btns = [[False for x in range(9)] for y in range(9)]
+#Make buttons to determine if scored
+scored = [[False for x in range(9)] for y in range(9)]
 # reset pattern counter
 resetSenseTime = 0
 isPattern = False
 willReset = False
 
 # create a Launchpad instance
-lp = launchpad.LaunchpadMk2();
+lp = launchpad.LaunchpadMk2()
 
 # initialize networktables
 NetworkTables.initialize(server='roborio-'+teamNumber+'-frc.local')
 nt = NetworkTables.getTable(tableName)
+ntScored = NetworkTables.getTable("Scored")
 
 # Rio connection monitor
 lastPingValue = False
@@ -91,16 +94,25 @@ def setAllColor(code):
 # called on every pad press
 def received(r, c, isPressed):
 
-    pygame.time.wait(40);
+    pygame.time.wait(40)
 
     # update btn array
     btns[r][c] = isPressed
 
+    if isPressed and btns[1][8] and r >= 6:
+        if scored[r][c]:
+            scored[r][c] = False
+        else:
+            scored[r][c] = True
+
     # change shifter color of pad to indicate press/release
-    if isPressed:
-        setColor(r, c, leds[r][c][0], leds[r][c][1], leds[r][c][2], 20)
+    if scored[r][c]:
+        setColor(r,c, 63, 0, 0 ,0)
     else:
-        setColor(r, c, leds[r][c][0], leds[r][c][1], leds[r][c][2], 0)
+        if isPressed:
+            setColor(r, c, leds[r][c][0], leds[r][c][1], leds[r][c][2], 20)
+        else:
+            setColor(r, c, leds[r][c][0], leds[r][c][1], leds[r][c][2], 0)
 
     # check for reset pattern
     if btns[8][0] and btns[8][1] and btns[8][2] and btns[8][3]:
@@ -124,25 +136,31 @@ def looper():
         lastPingValueTime = currentTimeMillis
     if(currentTimeMillis - lastPingValueTime < pingMaxTimeMillis):
         # is connected
-        setColor(8, 8, 0, 63, 0)
+        setColor(0, 0, 0, 63, 0)
     else:
         # is not connected
-        setColor(8, 8, 63, 0, 0)
+        setColor(0, 0, 63, 0, 0)
     lastPingValue = pingValue
 
     # send launchpad ping
     nt.putBoolean('pingValueLaunchpad', not nt.getBoolean('pingValueLaunchpad', False))
+
 
     # send networktables buttons
     for r in range(9):
         for c in range(9):
             status = btns[r][c]
             nt.putBoolean(str(r)+':'+str(c), status)
+            status = scored[r][c]
+            ntScored.putBoolean(str(r)+":"+str(c), status)
 
     # reset checker
     # buttons are still held down, ready to reset
     if isPattern and (currentTimeMillis - resetSenseTime) > 1000:
         willReset = True
+        for r in range(9):
+            for c in range(9):
+                scored[r][c] = False
         setAllColor(26)
 
     # buttons let go, reset it
