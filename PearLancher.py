@@ -12,10 +12,10 @@ leds = [
     [[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0]],
     [[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0]],
     [[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0]],
-    [[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0]],
-    [[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0]],
     [[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[63,0,0]],
-    [[63,25,25],[63,25,25],[63,25,25],[63,25,25],[63,25,25],[63,25,25],[63,25,25],[63,25,25],[63,25,25]],
+    [[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0]],
+    [[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[30,0,63]],
+    [[30,0,63],[30,0,63],[30,0,63],[30,0,63],[30,0,63],[30,0,63],[30,0,63],[30,0,63],[30,0,63]],
     [[256,256,0],[30,0,211],[256,256,0],[256,256,0],[30,0,211],[256,256,0],[256,256,0],[30,0,211],[256,256,0]],
     [[256,256,0],[30,0,63],[256,256,0],[256,256,0],[30,0,211],[256,256,0],[256,256,0],[30,0,211],[256,256,0]]
 ]
@@ -41,6 +41,7 @@ ntScored = NetworkTables.getTable("Scored")
 lastPingValue = False
 lastPingValueTime = 0
 pingMaxTimeMillis = 500
+lastPressed = 0
 
 def main():
     global btns
@@ -54,6 +55,10 @@ def main():
     # Clear the buffer because the Launchpad remembers everything
     lp.ButtonFlush()
     lp.Reset()
+
+    nt.putBoolean('ConeMode', False)
+    nt.putBoolean('CubeMode', True)
+
 
     btns = [[False for x in range(9)] for y in range(9)]
 
@@ -99,7 +104,9 @@ def received(r, c, isPressed):
     # update btn array
     btns[r][c] = isPressed
 
-    if isPressed and btns[5][8] and r >= 6:
+            
+
+    if isPressed and btns[3][8] and r >= 6:
         if scored[r][c]:
             scored[r][c] = False
         else:
@@ -127,7 +134,7 @@ def received(r, c, isPressed):
 
 
 def looper():
-    global isPattern, resetSenseTime, willReset, lastPingValue, nt, lastPingValueTime
+    global isPattern, resetSenseTime, willReset, lastPingValue, nt, lastPingValueTime, lastPressed
     currentTimeMillis = int(round(time.time() * 1000))
 
     # get ping from rio
@@ -141,18 +148,37 @@ def looper():
         # is not connected
         setColor(0, 7, 63, 0, 0)
     lastPingValue = pingValue
-
+    
     # send launchpad ping
     nt.putBoolean('pingValueLaunchpad', not nt.getBoolean('pingValueLaunchpad', False))
 
+    if btns[5][8] and leds[5][8][0] == 30 and currentTimeMillis-lastPressed > 200:
+        nt.putBoolean('ConeMode', True)
+        nt.putBoolean('CubeMode', False)
+        leds[5][8] = [63, 63, 0]
+        lastPressed = currentTimeMillis
+        for c in range (9):
+            if not scored[6][c]:
+                leds[6][c] = [63, 63, 0]
+                setColor(6, c, leds[6][c][0], leds[6][c][1], leds[6][c][2], 0)
+    elif btns[5][8] and currentTimeMillis-lastPressed > 200:
+        nt.putBoolean('ConeMode', False)
+        nt.putBoolean('CubeMode', True)
+        leds[5][8] = [30, 0, 63]
+        lastPressed = currentTimeMillis
+        for c in range (9):
+            if not scored[6][c]:
+                leds[6][c] = [30, 0, 63]
+                setColor(6, c, leds[6][c][0], leds[6][c][1], leds[6][c][2], 0)
 
     # send networktables buttons
     for r in range(9):
         for c in range(9):
-            status = btns[r][c]
-            nt.putBoolean(str(r)+':'+str(c), status)
             status = scored[r][c]
             ntScored.putBoolean(str(r)+":"+str(c), status)
+            if not scored[r][c] and not btns[5][8]:
+                status = btns[r][c]
+                nt.putBoolean(str(r)+':'+str(c), status)
 
     # reset checker
     # buttons are still held down, ready to reset
