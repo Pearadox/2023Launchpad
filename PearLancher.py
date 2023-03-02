@@ -12,9 +12,9 @@ leds = [
     [[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0]],
     [[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0]],
     [[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0]],
-    [[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[63,0,0]],
-    [[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0]],
     [[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[30,0,63]],
+    [[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0]],
+    [[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[63,0,0]],
     [[30,0,63],[30,0,63],[30,0,63],[30,0,63],[30,0,63],[30,0,63],[30,0,63],[30,0,63],[30,0,63]],
     [[256,256,0],[30,0,211],[256,256,0],[256,256,0],[30,0,211],[256,256,0],[256,256,0],[30,0,211],[256,256,0]],
     [[256,256,0],[30,0,63],[256,256,0],[256,256,0],[30,0,211],[256,256,0],[256,256,0],[30,0,211],[256,256,0]]
@@ -106,7 +106,7 @@ def received(r, c, isPressed):
 
             
 
-    if isPressed and btns[3][8] and r >= 6:
+    if isPressed and btns[5][8] and r >= 6:
         if scored[r][c]:
             scored[r][c] = False
         else:
@@ -152,19 +152,19 @@ def looper():
     # send launchpad ping
     nt.putBoolean('pingValueLaunchpad', not nt.getBoolean('pingValueLaunchpad', False))
 
-    if btns[5][8] and leds[5][8][0] == 30 and currentTimeMillis-lastPressed > 200:
+    if btns[3][8] and leds[3][8][0] == 30 and currentTimeMillis-lastPressed > 200:
         nt.putBoolean('ConeMode', True)
         nt.putBoolean('CubeMode', False)
-        leds[5][8] = [63, 63, 0]
+        leds[3][8] = [63, 63, 0]
         lastPressed = currentTimeMillis
         for c in range (9):
             if not scored[6][c]:
                 leds[6][c] = [63, 63, 0]
                 setColor(6, c, leds[6][c][0], leds[6][c][1], leds[6][c][2], 0)
-    elif btns[5][8] and currentTimeMillis-lastPressed > 200:
+    elif btns[3][8] and currentTimeMillis-lastPressed > 200:
         nt.putBoolean('ConeMode', False)
         nt.putBoolean('CubeMode', True)
-        leds[5][8] = [30, 0, 63]
+        leds[3][8] = [30, 0, 63]
         lastPressed = currentTimeMillis
         for c in range (9):
             if not scored[6][c]:
