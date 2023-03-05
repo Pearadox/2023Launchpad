@@ -10,8 +10,8 @@ tableName = "Launchpad"
 # LED Arrays:
 leds = [
     [[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0]],
-    [[30,30,63],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[25,60,0],[0,0,0]],
-    [[20,20,63],[0,63,63],[0,0,0],[0,0,0],[0,0,0],[5,63,16],[0,0,0],[12,40,0],[0,0,0]],
+    [[30,30,63],[0,0,0],[0,0,0],[15,63,45],[0,0,0],[0,0,0],[0,0,0],[25,60,0],[0,0,0]],
+    [[20,20,63],[0,63,63],[0,0,0],[0,63,30],[0,0,0],[63,30,0],[0,0,0],[12,40,0],[0,0,0]],
     [[10,10,63],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[2,30,0],[30,0,63]],
     [[0,0,63],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0]],
     [[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[63,0,0]],
@@ -133,6 +133,17 @@ def received(r, c, isPressed):
         isPattern = False
 
 
+# def ifLink():
+#     currentTimeMillis = int(round(time.time()*1000));
+#     lastFlashed = currentTimeMillis
+#     if(currentTimeMillis-lastFlashed > 400)
+#         setColor(r, c, leds[r][c][0], leds[r][c][1], leds[r][c][2], 20)
+#     else
+#         setColor(r, c, leds[r][c][0], leds[r][c][1], leds[r][c][2], 0)
+#         lastFlashed = currentTimeMillis
+
+
+
 def looper():
     global isPattern, resetSenseTime, willReset, lastPingValue, nt, lastPingValueTime, lastPressed
     currentTimeMillis = int(round(time.time() * 1000))
@@ -152,6 +163,8 @@ def looper():
     # send launchpad ping
     nt.putBoolean('pingValueLaunchpad', not nt.getBoolean('pingValueLaunchpad', False))
 
+
+    #Detect ConeMode or CubeMode
     if btns[3][8] and leds[3][8][0] == 30 and currentTimeMillis-lastPressed > 400:
         nt.putBoolean('ConeMode', True)
         nt.putBoolean('CubeMode', False)
