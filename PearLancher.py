@@ -30,7 +30,12 @@ isPattern = False
 willReset = False
 
 # create a Launchpad instance
-lp = launchpad.LaunchpadMk2()
+if launchpad.LaunchpadMk2().Check(0):
+    lp = launchpad.LaunchpadMk2()
+    mini = False
+elif launchpad.LaunchpadMiniMk3().Check(1):
+    lp = launchpad.LaunchpadMiniMk3()
+    mini = True
 
 # initialize networktables
 NetworkTables.initialize(server='roborio-'+teamNumber+'-frc.local')
@@ -45,12 +50,14 @@ lastPressed = 0
 
 def main():
     global btns
-    # open the first Launchpad Mk2
-    if lp.Open(0, "mk2"):
-        print(" - Launchpad Mk2: OK")
+    # open the first Launchpad
+    if not mini:
+        if lp.Open(0):
+            print(" - Launchpad Mk2: OK")
+    elif lp.Open(1):
+        print(" - Launchpad MiniMK3: OK")
     else:
-        print(" - Launchpad Mk2: ERROR (most likely not connected)")
-        return
+        print(" - Launchpad: ERROR (most likely not connected)")
 
     # Clear the buffer because the Launchpad remembers everything
     lp.ButtonFlush()
@@ -78,7 +85,7 @@ def main():
 
         # update button events
         stateArray = lp.ButtonStateXY()
-        if(len(stateArray) == 0):
+        if(stateArray==[]):
             continue
 
         # update buttons
