@@ -10,10 +10,10 @@ tableName = "Launchpad"
 # LED Arrays:
 leds = [
     [[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0]],
-    [[30,30,63],[0,0,0],[0,0,0],[15,63,45],[0,0,0],[0,0,0],[0,0,0],[25,60,0],[0,0,0]],
-    [[20,20,63],[0,63,63],[0,0,0],[0,63,30],[0,0,0],[63,30,0],[0,0,0],[12,40,0],[0,0,0]],
+    [[30,30,63],[0,0,0],[0,0,0],[15,63,45],[0,0,0],[63,20,0],[0,0,0],[25,60,0],[0,0,0]],
+    [[20,20,63],[0,63,63],[0,0,0],[0,63,30],[0,0,0],[63,10,0],[0,0,0],[12,40,0],[0,0,0]],
     [[10,10,63],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[2,30,0],[30,0,63]],
-    [[0,0,63],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0]],
+    [[0,0,63],[0,0,0],[63,0,30],[63,20,40],[0,0,0],[63,30,0],[0,0,0],[0,0,0],[0,0,0]],
     [[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[63,0,0]],
     [[30,0,63],[30,0,63],[30,0,63],[30,0,63],[30,0,63],[30,0,63],[30,0,63],[30,0,63],[30,0,63]],
     [[256,256,0],[30,0,211],[256,256,0],[256,256,0],[30,0,211],[256,256,0],[256,256,0],[30,0,211],[256,256,0]],
@@ -47,6 +47,8 @@ lastPingValue = False
 lastPingValueTime = 0
 pingMaxTimeMillis = 500
 lastPressed = 0
+lastGridButtPress = [-1,-1]
+lastFlashed = 0
 
 def main():
     global btns
@@ -152,7 +154,7 @@ def received(r, c, isPressed):
 
 
 def looper():
-    global isPattern, resetSenseTime, willReset, lastPingValue, nt, lastPingValueTime, lastPressed
+    global isPattern, resetSenseTime, willReset, lastPingValue, nt, lastPingValueTime, lastPressed, lastFlashed, lastGridButtPress
     currentTimeMillis = int(round(time.time() * 1000))
 
     # get ping from rio
@@ -190,7 +192,7 @@ def looper():
             if not scored[6][c]:
                 leds[6][c] = [30, 0, 63]
                 setColor(6, c, leds[6][c][0], leds[6][c][1], leds[6][c][2], 0)
-
+    changing = False
     # send networktables buttons
     for r in range(9):
         for c in range(9):
@@ -199,6 +201,26 @@ def looper():
             if not scored[r][c] and not btns[5][8]:
                 status = btns[r][c]
                 nt.putBoolean(str(r)+':'+str(c), status)
+            if r>=6 and btns[r][c]:
+                setColor(lastGridButtPress[0], lastGridButtPress[1], leds[lastGridButtPress[0]][lastGridButtPress[1]][0],leds[lastGridButtPress[0]][lastGridButtPress[1]][1],leds[lastGridButtPress[0]][lastGridButtPress[1]][2], 0)
+                changing = True
+                lastGridButtPress[0] = r
+                lastGridButtPress[1] = c
+
+
+    if currentTimeMillis-lastFlashed > 600:
+        lastFlashed = currentTimeMillis
+    elif currentTimeMillis-lastFlashed > 300:
+        if not changing:
+            r = lastGridButtPress[0]
+            c = lastGridButtPress[1]
+            setColor(r,c,0,0,0,0)
+        else:
+            lastFlashed = currentTimeMillis-300
+    else:
+        r = lastGridButtPress[0]
+        c = lastGridButtPress[1]
+        setColor(r,c,leds[r][c][0],leds[r][c][1],leds[r][c][2],0)
 
     # reset checker
     # buttons are still held down, ready to reset
