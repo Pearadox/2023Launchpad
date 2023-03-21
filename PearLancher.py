@@ -229,6 +229,7 @@ def looper():
         for r in range(9):
             for c in range(9):
                 scored[r][c] = False
+        lastGridButtPress[0] = -1
         setAllColor(26)
 
     # buttons let go, reset it
