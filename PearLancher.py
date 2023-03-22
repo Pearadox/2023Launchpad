@@ -201,26 +201,31 @@ def looper():
             if not scored[r][c] and not btns[5][8]:
                 status = btns[r][c]
                 nt.putBoolean(str(r)+':'+str(c), status)
-            if r>=6 and btns[r][c]:
-                setColor(lastGridButtPress[0], lastGridButtPress[1], leds[lastGridButtPress[0]][lastGridButtPress[1]][0],leds[lastGridButtPress[0]][lastGridButtPress[1]][1],leds[lastGridButtPress[0]][lastGridButtPress[1]][2], 0)
-                changing = True
-                lastGridButtPress[0] = r
-                lastGridButtPress[1] = c
-
-
-    if currentTimeMillis-lastFlashed > 600:
-        lastFlashed = currentTimeMillis
-    elif currentTimeMillis-lastFlashed > 300:
-        if not changing:
+            if not scored[r][c] and not btns[5][8]:
+                if r>=6 and btns[r][c]:
+                    setColor(lastGridButtPress[0], lastGridButtPress[1], leds[lastGridButtPress[0]][lastGridButtPress[1]][0],leds[lastGridButtPress[0]][lastGridButtPress[1]][1],leds[lastGridButtPress[0]][lastGridButtPress[1]][2], 0)
+                    changing = True
+                    lastGridButtPress[0] = r
+                    lastGridButtPress[1] = c
+            if scored[r][c]:
+                setColor(r,c,63,0,0, 0)
+    if scored[lastGridButtPress[0]][lastGridButtPress[1]]:
+        setColor(lastGridButtPress[0], lastGridButtPress[1], 63, 0, 0, 0)
+    else:
+        if currentTimeMillis-lastFlashed > 600:
+            lastFlashed = currentTimeMillis
+        elif currentTimeMillis-lastFlashed > 300:
+            if not changing:
+                r = lastGridButtPress[0]
+                c = lastGridButtPress[1]
+                setColor(r,c,0,0,0,0)
+            else:
+                lastFlashed = currentTimeMillis-300
+        else:
             r = lastGridButtPress[0]
             c = lastGridButtPress[1]
-            setColor(r,c,0,0,0,0)
-        else:
-            lastFlashed = currentTimeMillis-300
-    else:
-        r = lastGridButtPress[0]
-        c = lastGridButtPress[1]
-        setColor(r,c,leds[r][c][0],leds[r][c][1],leds[r][c][2],0)
+            setColor(r,c,leds[r][c][0],leds[r][c][1],leds[r][c][2],0)
+    
 
     # reset checker
     # buttons are still held down, ready to reset
